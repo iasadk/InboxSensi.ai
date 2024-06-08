@@ -1,13 +1,16 @@
 import Dashboard from "@/components/Dashboard";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
 const Page = async () => {
-  const { getUser } = getKindeServerSession();
-  const user = await getUser();
-  // if (!user) redirect("/auth-callback?origin=dashboard");
-  console.log("DATA:",user)
-  return <Dashboard/>;
+  const session = await getServerSession();
+  if (!session) {
+    redirect("/");
+  }
+  console.log("DATA:", session);
+  // console.log("ACCESS_TOKEN:",await getAccessToken());
+  // if(!da)
+  return <Dashboard user={session.user}/>;
 };
 
 export default Page;

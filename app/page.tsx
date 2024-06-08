@@ -3,13 +3,15 @@ import { Container } from "@/components/Container";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { RegisterLink } from "@kinde-oss/kinde-auth-nextjs/components";
-import Link from "next/link";
-import { useState } from "react";
-import { Check, LoaderCircle, X } from "lucide-react";
 import { test } from "@/lib/generativeAI";
+import { Check, LoaderCircle, X } from "lucide-react";
+import { signIn, useSession } from "next-auth/react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+
 export default function Home() {
+  const { data: session, status: sessionStatus } = useSession();
   const [apiKey, setApiKey] = useState<string>("");
   const [isValidKey, setIsValidKey] = useState<boolean>(false);
   const [isValidating, setIsValidating] = useState(false);
@@ -17,6 +19,13 @@ export default function Home() {
   const [showRedirect, setShowRedirect] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
+  
+  useEffect(() => {
+    if (sessionStatus === "authenticated") {
+      router.replace("/dashboard");
+    }
+  }, [sessionStatus, router]);
+
   const validateAPIKey = async () => {
     if (!apiKey) {
       toast({
@@ -27,11 +36,12 @@ export default function Home() {
     }
     setIsValidating(true);
     const res = await test(apiKey);
+
     if (res.success) {
       setIsValidKey(true);
       setShowRedirect(true);
-
-      router.push("api/auth/register");
+      localStorage.setItem("gemini_key", apiKey);
+      signIn("google", { callbackUrl: "/dashboard" });
     } else {
       toast({
         title: "API key is invalid",
@@ -47,9 +57,7 @@ export default function Home() {
   return (
     <Container className="flex min-h-screen flex-col items-center gap-y-36 p-24">
       {
-        <Button
-          onClick={validateAPIKey}
-        >
+        <Button onClick={validateAPIKey}>
           Login with Google{" "}
           {showRedirect && (
             <LoaderCircle className="animate-spin text-white ml-4" />
