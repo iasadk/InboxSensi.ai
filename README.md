@@ -1,36 +1,121 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Full-Stack Engineer Intern Assignment - README
+
+## Project Overview
+
+This project is a web application that allows users to log in using Google OAuth, fetch their last X emails from Gmail, and classify them into different categories using Google Gemini. The application includes the following functionality:
+
+- **User Authentication:** Users can log in using Google OAuth.
+- **API Key Storage:** Users can input their Google Gemini API key, which is stored in localStorage (A test key is also provided for testing purposes).
+- **Fetch Emails:** Emails are fetched from Gmail using the Gmail API.
+- **Classify Emails:** Emails are classified into categories such as Important, Promotional, Social, Marketing, and Spam using Google Gemini.
+
+## Technologies Used
+
+- **Frontend:** Next.js, Tailwind CSS
+- **Backend:** Next.js API routes, Langchain.js
+- **Authentication:** Google OAuth
+- **API Integration:** Gmail API, Gemini GPT
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Node.js (v14 or higher)
+- npm or yarn
+- Gemini API key other wise there is option to copy test key.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Installation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Clone the repository:**
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+   ```bash
+   git clone https://github.com/iasadk/InboxSensi.ai.git
+   cd project-name
+   ```
 
-## Learn More
+2. **Install dependencies:**
 
-To learn more about Next.js, take a look at the following resources:
+   ```bash
+   npm install
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. **Set up environment variables:**
+   Create a `.env.local` file in the root directory and add the following:
+   `    GOOGLE_CLIENT_ID=your-google-client-id
+        GOOGLE_CLIENT_SECRET=your-google-client-secret
+        NEXTAUTH_SECRET=your-next-auth-secret
+        NEXTAUTH_URL=your-website-url or http://localhost:3000
+   `
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+4. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
+   The application will be available at [http://localhost:3000](http://localhost:3000).
 
-## Deploy on Vercel
+### Setting Up Google OAuth
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Go to the Google Cloud Console:**
+   [Google Cloud Console](https://console.cloud.google.com/)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+2. **Create a new project:**
+
+   - Go to the project selector page and click on "New Project".
+   - Name your project and click "Create".
+
+3. **Set up OAuth 2.0 credentials:**
+
+   - Go to the "APIs & Services" > "Credentials" page.
+   - Click on "Create Credentials" and select "OAuth 2.0 Client IDs".
+   - Configure the OAuth consent screen with your details.
+   - Add your application’s URL (e.g., `http://localhost:3000`) as an authorized redirect URI.
+   - Copy the Client ID and Client Secret and add them to your `.env.local` file.
+
+4. **Add Test Users:**
+   - I have added the test user's for mine you can choose your's
+
+### Running the Application
+
+1. **Start the development server:**
+
+   ```bash
+   npm run dev
+   ```
+
+2. **Log in with Google:**
+
+   - Navigate to [http://localhost:3000](http://localhost:3000).
+   - Click on the "Login with Google" button and log in using your Google account.
+
+3. **Fetch and Classify Emails:**
+   - After logging in, you will see buttons to fetch and classify emails.
+   - Click "Fetch Emails" to retrieve your last X emails from Gmail.
+   - Click "Classify Emails" to categorize them using OpenAI GPT.
+
+## Deployment
+
+Deployment for this is done using vercel.
+
+## Contributing
+
+If you would like to contribute to this project, please follow these steps:
+
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature-branch`).
+3. Make your changes.
+4. Commit your changes (`git commit -m 'Add some feature'`).
+5. Push to the branch (`git push origin feature-branch`).
+6. Create a new Pull Request.
+
+## Contact
+
+For any questions or inquiries, you can reach out to:
+
+- Twitter: [@iasad0017](https://twitter.com/iasad0017)
+- LinkedIn: [Mohammad Asad Khan](https://www.linkedin.com/in/mohammad-asad-khan/)
+- Email: iasad0017@gmail.com
+
+All the best 🤝
+
+---
+
