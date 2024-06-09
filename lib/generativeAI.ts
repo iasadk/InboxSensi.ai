@@ -31,10 +31,6 @@ const safetySettings = [
     threshold: HarmBlockThreshold.BLOCK_NONE,
   },
 ];
-const USER_GEMINI_TOKEN = localStorage?.getItem("gemini_key") || "";
-
-const genAI = new GoogleGenerativeAI(USER_GEMINI_TOKEN);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 export async function test(key: string) {
   const genAI = new GoogleGenerativeAI(key);
@@ -64,6 +60,14 @@ export async function test(key: string) {
 
 export const classifyEmails = async (emails: MESSAGE[]) => {
   if (emails.length) {
+    const USER_GEMINI_TOKEN =
+      window.localStorage.getItem("gemini_key") ||
+      process.env.NEXT_PUBLIC_GEMINI_KEY ||
+      "";
+
+    const genAI = new GoogleGenerativeAI(USER_GEMINI_TOKEN);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
     const size = 30;
     let cleanedData: MESSAGE[] = [];
     for (let i = 0; i < emails.length; i += size) {

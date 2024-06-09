@@ -41,7 +41,6 @@ export default function Home() {
     if (res.success) {
       setIsValidKey(true);
       setShowRedirect(true);
-      localStorage.setItem("gemini_key", apiKey);
       signIn("google", { callbackUrl: "/dashboard" });
     } else {
       toast({
@@ -55,6 +54,12 @@ export default function Home() {
     }
     setIsValidating(false);
   };
+
+  // Added this like this becuase on build it giving window not defined
+  useEffect(() => {
+    window.localStorage.setItem("gemini_key", apiKey);
+  }, [isValidKey])
+  
   return (
     <Container className="flex min-h-screen flex-col items-center gap-y-20 p-24">
       <div>
