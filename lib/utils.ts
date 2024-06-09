@@ -18,7 +18,7 @@ export async function getToken() {
 export function prettifyEmailList(orgList : MESSAGE[], classifiedData: classifiedData[]){
   let classifiedEmails: MESSAGE[] = []
   for (const email of orgList) {
-    const classifiedInfo = classifiedData.find(data => data.id === email.id);
+    const classifiedInfo = !email.category ?  classifiedData.find(data => data.id === email.id) : email;
 
     classifiedEmails.push({
       ...email,

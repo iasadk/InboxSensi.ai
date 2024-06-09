@@ -79,8 +79,9 @@ export const classifyEmails = async (emails: MESSAGE[]) => {
           history: [],
         });
 
+        
         const JSONData = JSON.stringify(
-          emailList.map((email) => ({ subject: email.subject, id: email.id }))
+          emailList.filter(x => !x.category).map((email) => ({ subject: email.subject, id: email.id }))
         );
         const prompt = `Hi Gemini categories these emails on the basis of these points:
          - Important: Emails that are personal or work-related and require immediate attention.

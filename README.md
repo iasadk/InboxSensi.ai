@@ -9,6 +9,9 @@ This project is a web application that allows users to log in using Google OAuth
 - **Fetch Emails:** Emails are fetched from Gmail using the Gmail API.
 - **Classify Emails:** Emails are classified into categories such as Important, Promotional, Social, Marketing, and Spam using Google Gemini.
 
+### Project Demo Link
+[Click to watch](https://drive.google.com/file/d/1wuSKZMRr8tpo7OUASRhPxufTPMktPlGI/view?usp=sharing)
+
 ## Technologies Used
 
 - **Frontend:** Next.js, Tailwind CSS
