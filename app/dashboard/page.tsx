@@ -7,9 +7,6 @@ const Page = async () => {
   if (!session) {
     redirect("/");
   }
-  console.log("DATA:", session);
-  // console.log("ACCESS_TOKEN:",await getAccessToken());
-  // if(!da)
   return <Dashboard user={session.user}/>;
 };
 

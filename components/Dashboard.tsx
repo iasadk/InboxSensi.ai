@@ -13,7 +13,7 @@ type Props = {
 
 const Dashboard = ({ user }: Props) => {
   return (
-    <Container className="border-2 border-green-500 p-24">
+    <Container className="p-24">
       <div className="flex gap-x-4 items-center justify-between">
         {/* User Detail part */}
         <div className="flex gap-x-4 items-center">

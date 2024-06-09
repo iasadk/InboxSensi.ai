@@ -21,8 +21,6 @@ export const authOptions: any = {
   callbacks: {
     async signIn({ user, account }: { user: AuthUser; account: Account }) {
       if (account?.provider == "google") {
-        // console.log("GOOGLE LOGIN: ",user, account);
-        // localStorage.setItem("access_token",account.access_token || '');
         return true;
       }
     },

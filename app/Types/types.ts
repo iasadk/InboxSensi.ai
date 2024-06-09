@@ -6,7 +6,7 @@ export interface USER_TYPE {
 
 
 export interface MESSAGE_QDATA{
-  maxResults?: number;
+  maxResults: number;
   includeSpamTrash?: boolean
 }
 
@@ -14,4 +14,26 @@ export interface MESSAGE_QDATA{
 export interface MESSAGES{
   id:string,
   threadId:string
+}
+
+export interface MESSAGE_META{
+  name: string,
+  value: string
+}
+
+export interface MESSAGE{
+  id: string
+  threadId: string
+  snippet: string
+  body: string
+  subject: string
+  labelIds: string[]
+  metaData: MESSAGE_META[]
+  category?: string
+}
+
+export interface classifiedData{
+  subject: string,
+  id: string
+  category: string
 }

@@ -1,14 +1,45 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+import { MESSAGE } from "@/app/Types/types";
+import {
+  GoogleGenerativeAI,
+  HarmCategory,
+  HarmBlockThreshold,
+} from "@google/generative-ai";
+import { prettifyEmailList } from "./utils";
 
-// Access your API key as an environment variable (see "Set up your API key" above)
+const generationConfig = {
+  temperature: 1,
+  topP: 0.95,
+  topK: 64,
+  maxOutputTokens: 8192,
+  responseMimeType: "application/json",
+};
+const safetySettings = [
+  {
+    category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+  {
+    category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+    threshold: HarmBlockThreshold.BLOCK_NONE,
+  },
+];
+const USER_GEMINI_TOKEN = localStorage?.getItem("gemini_key") || "";
+
+const genAI = new GoogleGenerativeAI(USER_GEMINI_TOKEN);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 export async function test(key: string) {
+  const genAI = new GoogleGenerativeAI(key);
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
   try {
-    const genAI = new GoogleGenerativeAI(key);
-    // The Gemini 1.5 models are versatile and work with both text-only and multimodal prompts
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-    console.log(model);
     const prompt = "Hi";
 
     try {
@@ -24,14 +55,65 @@ export async function test(key: string) {
         error: "Invalid API key",
       };
     }
-    // if(response.error){
-    //     return{
-    //         message: error.message
-    //     }
-    // }
   } catch (error: any) {
     return {
       message: error.message,
     };
   }
 }
+
+export const classifyEmails = async (emails: MESSAGE[]) => {
+  if (emails.length) {
+    const size = 30;
+    let cleanedData: MESSAGE[] = [];
+    for (let i = 0; i < emails.length; i += size) {
+      const emailList = emails.slice(i, i + size);
+      try {
+        const chatSession = model.startChat({
+          generationConfig,
+          safetySettings,
+          history: [],
+        });
+
+        const JSONData = JSON.stringify(
+          emailList.map((email) => ({ subject: email.subject, id: email.id }))
+        );
+        const prompt = `Hi Gemini categories these emails on the basis of these points:
+         - Important: Emails that are personal or work-related and require immediate attention.
+         - Promotions: Emails related to sales, discounts, and marketing campaigns.
+         - Social: Emails from social networks, friends, and family.
+         - Marketing: Emails related to marketing, newsletters, and notifications.
+         - Spam: Unwanted or unsolicited emails.
+         - General: If none of the above are matched, use General
+
+         I'm giving you JSON object with this format:
+         {
+          subject:"SOME SUBJECT",
+          id:'uniqueId'
+         }
+
+         here is the data: ${JSONData}
+
+         Give me result strictly in this format only no other text is required: 
+         {
+          subject:"",
+          id: "SAME AS GIVEN",
+          category: "CATEGORY SPECIFIED ABOVE"
+         }
+
+         `;
+
+        const result = await chatSession.sendMessage(prompt);
+        const classifications = result.response;
+
+        const aiResponse = classifications.text();
+        cleanedData = prettifyEmailList(emailList, JSON.parse(aiResponse));
+      } catch (error: any) {
+        console.error("Error:", error.message);
+        // Log error or handle it as needed
+      }
+    }
+    return cleanedData;
+  }
+  return emails;
+};
