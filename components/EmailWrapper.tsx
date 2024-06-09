@@ -105,13 +105,8 @@ const EmailWrapper = (props: Props) => {
       const msgs: MESSAGE[] = await Promise.all(messagePromise);
       const sliceStart =
         qData.maxResults - 10 === 0 ? 0 : qData.maxResults - 10;
-      const sliceEnd = qData.maxResults === 10 ? 10 : msgs.length;
-      console.log(qData.maxResults,sliceStart, sliceEnd)
-      if(sliceStart !== 0 && sliceEnd !== 10){
-        setInboxList([...inboxList, ...msgs.slice(sliceStart, sliceEnd)]);
-      }else{
-        setInboxList(msgs)
-      }
+      const sliceEnd = qData.maxResults - sliceStart === 0 ? 10 : msgs.length;
+      setInboxList([...inboxList, ...msgs.slice(sliceStart, sliceEnd)]);
     } catch (err) {
       setShowError(true);
       console.error("Error processing messages", err);
