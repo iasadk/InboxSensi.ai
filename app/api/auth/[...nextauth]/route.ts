@@ -1,7 +1,7 @@
-import NextAuth, { Account, User as AuthUser, TokenSet } from "next-auth";
+import NextAuth, { Account, User as AuthUser, NextAuthOptions, TokenSet } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
-const authOptions: any = {
+const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID ?? "",
@@ -19,6 +19,7 @@ const authOptions: any = {
     // ...add more providers here
   ],
   callbacks: {
+    // @ts-ignore
     async signIn({ user, account }: { user: AuthUser; account: Account }) {
       if (account?.provider == "google") {
         return true;
@@ -44,5 +45,5 @@ const authOptions: any = {
   },
 };
 
-export const handler = NextAuth(authOptions);
+const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
