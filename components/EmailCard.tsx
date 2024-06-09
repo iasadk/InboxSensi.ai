@@ -8,9 +8,10 @@ import DOMPurify from "dompurify"
 
 type Props = {
   message: MESSAGE;
+  idx: number
 };
 
-const EmailCard = forwardRef<HTMLDivElement, Props>(({ message }, ref) => {
+const EmailCard = forwardRef<HTMLDivElement, Props>(({ message,idx }, ref) => {
   const [open, setOpen] = useState<boolean>(false);
   const cleanHtml = DOMPurify.sanitize(message.snippet);
 
@@ -18,6 +19,7 @@ const EmailCard = forwardRef<HTMLDivElement, Props>(({ message }, ref) => {
     <div className="border  rounded-md py-3 px-4 cursor-pointer hover:shadow-md transition-shadow" ref={ref} onClick={()=>{
       setOpen(true)
     }}>
+      <p>{idx+1}</p>
       <div className="text-xl font-medium flex justify-between items-center">
         <div className="flex flex-col">
           <span className="inline-block">

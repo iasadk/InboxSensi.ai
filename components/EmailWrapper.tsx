@@ -20,13 +20,20 @@ import EmailCardSkeleton from "./EmailCardSkeleton";
 import EmailsAPIError from "./EmailsAPIError";
 import { classifyEmails } from "@/lib/generativeAI";
 import { LoaderCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
+import {
+  cn,
+  handleExistingInboxList,
+  loadLocallyClassifedMsgs,
+  mergeLocallyClassifiedAndNewUnclassifiedMsgs,
+} from "@/lib/utils";
+import { signOut } from "next-auth/react";
+import { useToast } from "./ui/use-toast";
 
 type Props = {};
 
 const EmailWrapper = (props: Props) => {
   const [qData, setQData] = useState<MESSAGE_QDATA>({
-    maxResults: 10,
+    maxResults: 15,
     includeSpamTrash: true,
   });
   const [ajxMessages, setAjxMessages] = useState<boolean>(false);
@@ -34,18 +41,44 @@ const EmailWrapper = (props: Props) => {
   const [inboxList, setInboxList] = useState<MESSAGE[]>([]);
   const [isClassifying, setIsClassifying] = useState<boolean>(false);
   const scrollRef = useRef(null);
+  const { toast } = useToast();
   // Logic to fetch all user inbox :
   const fetchUserInboxMails = () => {
     setAjxMessages(true);
     setShowError(false);
     MessageService.fetchMessages(qData)
       .then((res: any) => {
-        processMessages(res.data.messages);
+
+        const JsonClassfiedMsgs = loadLocallyClassifedMsgs();
+        const existingClassifiedMessageIds = JsonClassfiedMsgs.filter(
+          (x: any) => x.category
+        ).map((x: any) => x.id);
+        // Only fetching those message details for which we don't have any classified data in local storage.
+        const newMessageIdWhichWeDontHave = res.data.messages.filter(
+          (msg: any) => !existingClassifiedMessageIds.includes(msg.id)
+        );
+        
+        if (!inboxList.length) {
+          processMessages(newMessageIdWhichWeDontHave);
+        } else {
+          processMessages(newMessageIdWhichWeDontHave);
+        }
       })
       .catch((error: any) => {
         setAjxMessages(false);
         setShowError(true);
-        console.log("FAILED TO FETCH INBOX INFO: ", error);
+        if (error.response.status === 401) {
+          toast({
+            title: "Session Expired !!",
+            description: "Please login again.",
+          });
+          signOut();
+        }
+        console.log(
+          "FAILED TO FETCH INBOX INFO: ",
+          error.response.data?.error?.message
+        );
+        // if(error.message)
       });
   };
 
@@ -76,7 +109,7 @@ const EmailWrapper = (props: Props) => {
         const bodyData = part.body.data;
         body = Buffer.from(bodyData, "base64").toString("utf-8");
       } else if (res.data.payload.body && res.data.payload.body.data) {
-        // sometimes we don't have and text/plain && text/html part in fetched email paymload
+        // sometimes we don't have and text/plain && text/html part in fetched email payload
         const bodyData = res.data.payload.body.data;
         body = Buffer.from(bodyData, "base64").toString("utf-8");
       }
@@ -97,17 +130,20 @@ const EmailWrapper = (props: Props) => {
     }
   };
 
-  const processMessages = async (messages: MESSAGES[]) => {
+  const processMessages = async (
+    messages: MESSAGES[]) => {
     try {
       const messagePromise = messages.map((message) =>
         fetchMessageDetails(message.id)
       );
       const msgs: MESSAGE[] = await Promise.all(messagePromise);
-      // const sliceStart =
-      //   qData.maxResults - 10 === 0 ? 0 : qData.maxResults - 10;
-      // const sliceEnd = qData.maxResults - sliceStart === 0 ? 10 : msgs.length;
-      // setInboxList([...inboxList, ...msgs.slice(sliceStart, sliceEnd)]);
-      setInboxList(msgs)
+      const locallyClassifiedMsg = loadLocallyClassifedMsgs();
+      const mergedData = mergeLocallyClassifiedAndNewUnclassifiedMsgs(
+        locallyClassifiedMsg,
+        msgs,
+        qData.maxResults
+      );
+      setInboxList(mergedData)
     } catch (err) {
       setShowError(true);
       console.error("Error processing messages", err);
@@ -119,16 +155,24 @@ const EmailWrapper = (props: Props) => {
     setIsClassifying(true);
     const data = await classifyEmails(inboxList);
     setIsClassifying(false);
+
+    localStorage.setItem("classified_msgs", JSON.stringify(data));
     setInboxList(data);
   };
   useEffect(() => {
-    if(scrollRef){
-      if(qData.maxResults > 10){
+    if (scrollRef) {
+      if (qData.maxResults > inboxList.length) {
+        // only scroll to bottom once user fetches more than 15 rows
         // @ts-ignore
-      scrollRef?.current?.scrollIntoView({ behavior: 'smooth' })
+        scrollRef?.current?.scrollIntoView({ behavior: "smooth" });
       }
     }
-    fetchUserInboxMails();
+    if (qData.maxResults < inboxList.length) {
+      // then we don't need to call API again for existing result
+      setInboxList(handleExistingInboxList(qData.maxResults, inboxList));
+    } else {
+      fetchUserInboxMails();
+    }
   }, [qData]);
 
   return (
@@ -139,14 +183,15 @@ const EmailWrapper = (props: Props) => {
             setQData({ ...qData, maxResults: Number(e) });
             window.scrollTo({ behavior: "smooth", top: -200 });
           }}
+          value={qData.maxResults}
         >
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="10" />
+            <SelectValue placeholder="15" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={10}>10</SelectItem>
-            <SelectItem value={20}>20</SelectItem>
+            <SelectItem value={15}>15</SelectItem>
             <SelectItem value={30}>30</SelectItem>
+            <SelectItem value={45}>45</SelectItem>
           </SelectContent>
         </Select>
 
@@ -170,9 +215,11 @@ const EmailWrapper = (props: Props) => {
         <div className="flex flex-col gap-y-8 mt-12">
           {inboxList.map((x: MESSAGE, idx: number) => {
             if (inboxList.length - 1 === idx) {
-              return <EmailCard key={x.id} message={x} ref={scrollRef} />
+              return (
+                <EmailCard key={x.id} message={x} ref={scrollRef} idx={idx} />
+              );
             } else {
-              return <EmailCard key={x.id} message={x} />;
+              return <EmailCard key={x.id} message={x} idx={idx} />;
             }
           })}
         </div>

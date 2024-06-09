@@ -68,7 +68,7 @@ export const classifyEmails = async (emails: MESSAGE[]) => {
     const genAI = new GoogleGenerativeAI(USER_GEMINI_TOKEN);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const size = 30;
+    const size = 45;
     let cleanedData: MESSAGE[] = [];
     for (let i = 0; i < emails.length; i += size) {
       const emailList = emails.slice(i, i + size);
@@ -79,11 +79,13 @@ export const classifyEmails = async (emails: MESSAGE[]) => {
           history: [],
         });
 
-        
-        const JSONData = JSON.stringify(
-          emailList.filter(x => !x.category).map((email) => ({ subject: email.subject, id: email.id }))
-        );
-        const prompt = `Hi Gemini categories these emails on the basis of these points:
+        const JSONData = emailList
+          .filter((x) => !x.category)
+          .map((email) => ({ subject: email.subject, id: email.id }));
+          // console.log(JSONData)
+          // If No new Data is there then why even bother to classify it using Gemini
+        if (JSONData.length) {
+          const prompt = `Hi Gemini categories these emails on the basis of these points:
          - Important: Emails that are personal or work-related and require immediate attention.
          - Promotions: Emails related to sales, discounts, and marketing campaigns.
          - Social: Emails from social networks, friends, and family.
@@ -97,7 +99,7 @@ export const classifyEmails = async (emails: MESSAGE[]) => {
           id:'uniqueId'
          }
 
-         here is the data: ${JSONData}
+         here is the data: ${JSON.stringify(JSONData)}
 
          Give me result strictly in this format only no other text is required: 
          {
@@ -108,11 +110,14 @@ export const classifyEmails = async (emails: MESSAGE[]) => {
 
          `;
 
-        const result = await chatSession.sendMessage(prompt);
-        const classifications = result.response;
+          const result = await chatSession.sendMessage(prompt);
+          const classifications = result.response;
 
-        const aiResponse = classifications.text();
-        cleanedData = prettifyEmailList(emailList, JSON.parse(aiResponse));
+          const aiResponse = classifications.text();
+          cleanedData = prettifyEmailList(emailList, JSON.parse(aiResponse));
+        }else{
+          return emails;
+        }
       } catch (error: any) {
         console.error("Error:", error.message);
         // Log error or handle it as needed
