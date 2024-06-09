@@ -216,10 +216,10 @@ const EmailWrapper = (props: Props) => {
           {inboxList.map((x: MESSAGE, idx: number) => {
             if (inboxList.length - 1 === idx) {
               return (
-                <EmailCard key={x.id} message={x} ref={scrollRef} idx={idx} />
+                <EmailCard key={x.id} message={x} ref={scrollRef} />
               );
             } else {
-              return <EmailCard key={x.id} message={x} idx={idx} />;
+              return <EmailCard key={x.id} message={x} />;
             }
           })}
         </div>
