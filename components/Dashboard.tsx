@@ -34,7 +34,7 @@ const Dashboard = ({ user }: Props) => {
               className={"bg-rose-600"}
               variant={"destructive"}
               onClick={()=>{
-                window.localStorage.clear();
+                // window.localStorage.setItem("");
                 signOut();
 
               }}

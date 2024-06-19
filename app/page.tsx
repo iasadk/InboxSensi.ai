@@ -57,7 +57,9 @@ export default function Home() {
 
   // Added this like this becuase on build it giving window not defined
   useEffect(() => {
-    window.localStorage.setItem("gemini_key", apiKey);
+    if(apiKey){
+      window.localStorage.setItem("gemini_key", apiKey);
+    }
   }, [isValidKey])
   
   return (
